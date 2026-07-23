@@ -11,8 +11,6 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
 
-    AI_SERVICE_API_KEY = os.getenv("AI_SERVICE_API_KEY", "").strip()
-
     MAX_CONVERSATION_MESSAGES = int(
         os.getenv("MAX_CONVERSATION_MESSAGES", "500")
     )

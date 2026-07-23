@@ -14,7 +14,6 @@ TAG="$1"
 IMAGE="${REGISTRY}/${REPOSITORY}:${TAG}"
 
 OPENAI_SECRET_ID="hearo/model/openai-api-key"
-SERVICE_KEY_SECRET_ID="hearo/model/service-api-key"
 
 APP_NAME="hearo-model"
 CANDIDATE_NAME="hearo-model-candidate"
@@ -31,12 +30,6 @@ OPENAI_API_KEY="$(aws secretsmanager get-secret-value \
   --output text \
   --region "${REGION}")"
 
-AI_SERVICE_API_KEY="$(aws secretsmanager get-secret-value \
-  --secret-id "${SERVICE_KEY_SECRET_ID}" \
-  --query SecretString \
-  --output text \
-  --region "${REGION}")"
-
 docker rm -f "${CANDIDATE_NAME}" >/dev/null 2>&1 || true
 
 docker run -d \
@@ -45,7 +38,6 @@ docker run -d \
   -p 127.0.0.1:5001:5000 \
   -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
   -e OPENAI_MODEL="gpt-4.1-mini" \
-  -e AI_SERVICE_API_KEY="${AI_SERVICE_API_KEY}" \
   "${IMAGE}" >/dev/null
 
 for _ in {1..30}; do
@@ -60,7 +52,6 @@ curl -fsS http://127.0.0.1:5001/health >/dev/null
 curl -fsS \
   -X POST http://127.0.0.1:5001/api/final-report \
   -H 'Content-Type: application/json' \
-  -H "X-AI-Service-Key: ${AI_SERVICE_API_KEY}" \
   -d '{"conversation":[{"speaker":"patient","text":"허리가 아파요."},{"speaker":"doctor","text":"무리하지 말고 통증이 심해지면 다시 방문하세요."}]}' \
   >/dev/null
 
@@ -78,7 +69,6 @@ if ! docker run -d \
   -p 5000:5000 \
   -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
   -e OPENAI_MODEL="gpt-4.1-mini" \
-  -e AI_SERVICE_API_KEY="${AI_SERVICE_API_KEY}" \
   "${IMAGE}" >/dev/null; then
   if docker inspect "${PREVIOUS_NAME}" >/dev/null 2>&1; then
     docker rename "${PREVIOUS_NAME}" "${APP_NAME}"

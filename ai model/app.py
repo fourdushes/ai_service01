@@ -1,4 +1,3 @@
-import hmac
 import logging
 from typing import Any
 
@@ -22,20 +21,6 @@ def create_app() -> Flask:
         ),
     )
 
-    def is_authorized():
-        expected_key = Config.AI_SERVICE_API_KEY
-
-        # 개발 중 키가 비어 있으면 인증 생략
-        if not expected_key:
-            return True
-
-        received_key = request.headers.get("X-AI-Service-Key", "")
-
-        return hmac.compare_digest(
-            received_key.encode("utf-8"),
-            expected_key.encode("utf-8")
-        )
-
     @app.get("/health")
     def health():
         return jsonify({
@@ -45,12 +30,6 @@ def create_app() -> Flask:
 
     @app.post("/api/final-report")
     def final_report():
-        if not is_authorized():
-            return jsonify({
-                "success": False,
-                "message": "AI 서버 인증에 실패했습니다.",
-            }), 401
-
         body: dict[str, Any] = (
             request.get_json(silent=True) or {}
         )

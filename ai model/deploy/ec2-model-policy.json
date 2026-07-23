@@ -23,8 +23,7 @@
         "secretsmanager:GetSecretValue"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:ap-northeast-2:225989329853:secret:hearo/model/openai-api-key-*",
-        "arn:aws:secretsmanager:ap-northeast-2:225989329853:secret:hearo/model/service-api-key-*"
+        "arn:aws:secretsmanager:ap-northeast-2:225989329853:secret:hearo/model/openai-api-key-*"
       ]
     }
   ]

@@ -6,7 +6,6 @@
 
 - `GET /health`
 - `POST /api/final-report`
-- 인증 헤더: `X-AI-Service-Key`
 - 기본 포트: `5000`
 
 ## 로컬 실행
@@ -44,10 +43,9 @@ chmod +x deploy/*.sh
 
 ## Secrets Manager
 
-EC2에는 다음 두 Secret이 필요합니다.
+EC2에는 다음 Secret이 필요합니다.
 
 - `hearo/model/openai-api-key`
-- `hearo/model/service-api-key`
 
 EC2 Role에 `deploy/ec2-model-policy.json`의 권한을 반영합니다. 키를 이미지, Git, EC2 파일에 저장하지 않습니다.
 
@@ -67,7 +65,6 @@ chmod +x deploy-ec2.sh
 ```http
 POST /api/final-report
 Content-Type: application/json
-X-AI-Service-Key: <service-key>
 ```
 
 ```json
