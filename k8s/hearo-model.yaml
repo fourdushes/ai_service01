@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hearo-model
+  labels:
+    app: hearo-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hearo-model
+  template:
+    metadata:
+      labels:
+        app: hearo-model
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+        workload: model
+      containers:
+        - name: hearo-model
+          # GitHub Actions에서 새 commit SHA 태그로 변경합니다.
+          image: 225989329853.dkr.ecr.ap-northeast-2.amazonaws.com/hearo-model:initial
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hearo-model-secret
+                  key: openai-api-key
+            - name: AI_SERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hearo-model-secret
+                  key: ai-service-api-key
+                  optional: true
+            - name: OPENAI_MODEL
+              value: gpt-4.1-mini
+            - name: MAX_CONVERSATION_MESSAGES
+              value: "500"
+            - name: MAX_TEXT_LENGTH
+              value: "50000"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hearo-model
+  labels:
+    app: hearo-model
+spec:
+  type: ClusterIP
+  selector:
+    app: hearo-model
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http
