@@ -1,0 +1,8 @@
+POST http://127.0.0.1:5000/api/final-report
+Content-Type: application/json
+
+{
+  "wardUserId": "ward-001",
+  "archiveId": 1,
+  "allChatText": "환자: 일주일 전부터 허리가 아프고 아침에 특히 통증이 심합니다.\n의사: 허리디스크 가능성이 있어 검사가 필요합니다.\n환자: 생활할 때 조심해야 할 점이 있나요?\n의사: 무거운 물건은 들지 말고 다리 저림이나 통증 악화가 있으면 다시 방문하세요."
+}
