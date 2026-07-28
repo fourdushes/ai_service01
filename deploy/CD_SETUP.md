@@ -4,31 +4,23 @@ The production deployment is intentionally manual. GitHub Actions builds and pus
 the image and updates `k8s/hearo-model.yaml`; Argo CD shows the application as
 `OutOfSync` until an operator selects **Sync**.
 
-## Required network rules
+## Deployment topology
 
-Allow these ports only between the backend and model EC2 security groups:
+The model service uses its own standalone EC2 and k3s cluster. It is not joined to
+the backend cluster. Argo CD runs in the model cluster and manages only the model
+Application. The backend can be provisioned later as a separate cluster.
 
-- TCP 6443 from the model node to the backend node
-- UDP 8472 between all k3s nodes
-- TCP 10250 between all k3s nodes
+## Network rules
 
-Do not expose UDP 8472 to the public internet.
+The single-node cluster does not require k3s internode ports. Allow SSH only from
+the operator IP. Do not expose TCP 6443, UDP 8472, or TCP 10250 to the internet.
 
 ## Install the cluster
 
-On the backend EC2 instance:
+On the model EC2 instance:
 
 ```bash
-sudo ./deploy/k3s/install-server.sh
-```
-
-On the model EC2 instance, using the backend private IP and printed server token:
-
-```bash
-sudo env \
-  K3S_URL=https://<BACKEND_PRIVATE_IP>:6443 \
-  K3S_TOKEN='<K3S_SERVER_TOKEN>' \
-  ./deploy/k3s/install-model-agent.sh
+sudo ./deploy/k3s/install-model-server.sh
 ```
 
 ## Private ECR access
@@ -40,7 +32,7 @@ must not be used as permanent cluster configuration.
 
 ## Create the runtime secret
 
-On the backend k3s server:
+On the model k3s server:
 
 ```bash
 sudo kubectl create namespace hearo --dry-run=client -o yaml \
@@ -53,7 +45,7 @@ sudo kubectl --namespace hearo create secret generic hearo-model-secret \
 
 ## Install Argo CD
 
-Run from the repository root on the backend EC2 instance:
+Run from the repository root on the model EC2 instance:
 
 ```bash
 sudo ./deploy/argocd/install.sh
