@@ -17,6 +17,11 @@ spec:
       nodeSelector:
         kubernetes.io/arch: arm64
         workload: model
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: model
+          effect: NoSchedule
       containers:
         - name: hearo-model
           # GitHub Actions에서 새 commit SHA 태그로 변경합니다.

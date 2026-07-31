@@ -49,7 +49,7 @@ chmod +x deploy/*.sh
 2. GitHub OIDC를 통한 AWS 인증
 3. ARM64 Docker 이미지를 `hearo-model` ECR 저장소에 commit SHA 태그로 push
 4. `k8s/hearo-model.yaml`의 이미지 태그 변경 및 bot commit
-5. Argo CD가 Git 변경을 감지하여 모델 워크로드 배포
+5. 웹 EC2의 기존 Argo CD가 Git 변경을 감지하고, 운영자가 Sync를 승인하면 배포
 
 GitHub 저장소에 다음 값을 등록해야 합니다.
 
@@ -57,11 +57,17 @@ GitHub 저장소에 다음 값을 등록해야 합니다.
 - Actions variable `AWS_REGION`: `ap-northeast-2`
 - Actions variable `AWS_ACCOUNT_ID`: `225989329853`
 
-모델용 Kubernetes 노드에는 다음 라벨을 추가합니다.
+모델 EC2는 웹 EC2의 기존 k3s 클러스터에 전용 agent로 참가시킵니다. 설치
+스크립트가 라벨, taint, ECR credential provider를 함께 구성합니다.
 
 ```bash
-kubectl label node <model-node-name> workload=model
+sudo env \
+  K3S_URL=https://172.31.11.27:6443 \
+  K3S_TOKEN='<K3S_SERVER_TOKEN>' \
+  ./deploy/k3s/install-model-agent.sh
 ```
+
+전체 전환 절차와 보안그룹 규칙은 `deploy/CD_SETUP.md`를 참고합니다.
 
 최초 배포 전에 실제 OpenAI 키를 클러스터에 직접 등록합니다. Secret 파일은 Git에
 커밋하지 않습니다.
